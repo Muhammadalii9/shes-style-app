@@ -17,7 +17,7 @@ with col_info2:
 
 st.divider()
 
-# --- Measurements ---
+# --- Measurements (Kameez) ---
 st.subheader("📏 Kameez aur Astin")
 m1, m2, m3 = st.columns(3)
 
@@ -37,16 +37,21 @@ with m3:
     astin_lambai = st.number_input("Astin ki Lambai", value=20.0)
     arm_hole = st.number_input("Armhole (Golaee)", value=8.5)
     astin_sar = st.number_input("Astin ka Sar", value=3.5)
-    loosing = st.number_input("Loosing", value=2.0)
 
 st.divider()
 
+# --- Bottom (Shalwar) ---
 st.subheader("👖 Shalwar / Bottom")
-s1, s2 = st.columns(2)
+s1, s2, s3 = st.columns(3)
 with s1:
     shalwar_lambai = st.number_input("Shalwar ki Lambai", value=38.0)
 with s2:
     paicha = st.number_input("Paicha", value=6.5)
+with s3:
+    # Loosing ab yahan Shalwar ke section mein hai
+    loosing = st.number_input("Loosing (Shalwar/Gher)", value=2.0)
+
+st.divider()
 
 description = st.text_area("📝 Extra Instructions (Design/Lace/Piping)")
 
@@ -57,7 +62,7 @@ if st.button("Generate Print Slip"):
     if name:
         st.success(f"Order Saved for {name}!")
         
-        # Ek saaf-suthri slip jo print ho sake
+        # Print Slip Update
         st.markdown(f"""
         ---
         ### 🧾 {shop_name} - Measurement Slip
@@ -71,11 +76,10 @@ if st.button("Generate Print Slip"):
         * Astin: {astin_lambai} | Armhole: {arm_hole} | Astin Sar: {astin_sar}
         
         **Shalwar Details:**
-        * Lambai: {shalwar_lambai} | Paicha: {paicha}
+        * Lambai: {shalwar_lambai} | Paicha: {paicha} | Loosing: {loosing}
         
         **Notes:** {description}
         ---
         """)
-        st.info("💡 Is slip ka screenshot le len ya 'Ctrl + P' daba kar print kar len.")
     else:
         st.error("Pehle Customer ka Naam likhen!")
