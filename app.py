@@ -1,14 +1,19 @@
 import streamlit as st
+import pandas as pd
+from datetime import datetime
 
 # --- Shop ka Naam ---
 shop_name = "She's Style Tailors"
-
 st.set_page_config(page_title=shop_name, layout="wide")
-st.title(f"✂️ {shop_name}: Booking & Measurements")
 
-# --- Form Shuru ---
-st.header("📋 Customer Information")
+# --- Data Storage (Temporary Session) ---
+if 'orders' not in st.session_state:
+    st.session_state.orders = []
 
+st.title(f"✂️ {shop_name}: Digital Register")
+
+# --- Customer Information ---
+st.header("📋 New Order")
 col_info1, col_info2 = st.columns(2)
 with col_info1:
     name = st.text_input("Customer ka Naam")
@@ -17,69 +22,79 @@ with col_info2:
 
 st.divider()
 
-# --- Measurements (Kameez) ---
-st.subheader("📏 Kameez aur Astin")
+# --- Measurements ---
+st.subheader("📏 Measurements")
 m1, m2, m3 = st.columns(3)
 
 with m1:
-    lambai = st.number_input("Kameez ki Lambai", value=38.0)
-    shoulder = st.number_input("Shoulder (Tera)", value=14.0)
+    lambai = st.number_input("Kameez Lambai", value=38.0)
     chest = st.number_input("Chest (Seena)", value=34.0)
-    kamar = st.number_input("Kamar (Waist)", value=32.0)
+    shoulder = st.number_input("Shoulder (Tera)", value=14.0)
+    kamar = st.number_input("Kamar", value=32.0)
 
 with m2:
     hip = st.number_input("Hip", value=36.0)
-    chaak = st.number_input("Chaak (Armhole se niche)", value=11.0)
-    daman = st.number_input("Daman / Ghera", value=22.0)
-    gala = st.text_input("Gala (Front/Back)", "6x6")
+    chaak = st.number_input("Chaak", value=11.0)
+    daman = st.number_input("Daman", value=22.0)
+    gala = st.text_input("Gala", "6x6")
 
 with m3:
-    astin_lambai = st.number_input("Astin ki Lambai", value=20.0)
-    arm_hole = st.number_input("Armhole (Golaee)", value=8.5)
-    astin_sar = st.number_input("Astin ka Sar", value=3.5)
-
-st.divider()
-
-# --- Bottom (Shalwar) ---
-st.subheader("👖 Shalwar / Bottom")
-s1, s2, s3 = st.columns(3)
-with s1:
-    shalwar_lambai = st.number_input("Shalwar ki Lambai", value=38.0)
-with s2:
+    astin = st.number_input("Astin Lambai", value=20.0)
+    armhole = st.number_input("Armhole", value=8.5)
+    shalwar = st.number_input("Shalwar Lambai", value=38.0)
     paicha = st.number_input("Paicha", value=6.5)
-with s3:
-    # Loosing ab yahan Shalwar ke section mein hai
-    loosing = st.number_input("Loosing (Shalwar/Gher)", value=2.0)
 
-st.divider()
+loosing = st.number_input("Loosing (Shalwar/Gher)", value=2.0)
+note = st.text_area("📝 Extra Design Details (Lace, Piping, etc.)")
 
-description = st.text_area("📝 Extra Instructions (Design/Lace/Piping)")
+# --- Buttons: Save & Download ---
+c1, c2 = st.columns(2)
 
-st.divider()
+with c1:
+    if st.button("➕ List Mein Shamil Karen"):
+        if name:
+            # Data ko ek dictionary mein save karna
+            new_order = {
+                "Date": datetime.now().strftime("%d-%m-%Y"),
+                "Name": name,
+                "Phone": phone,
+                "Lambai": lambai,
+                "Chest": chest,
+                "Shoulder": shoulder,
+                "Kamar": kamar,
+                "Hip": hip,
+                "Chaak": chaak,
+                "Daman": daman,
+                "Gala": gala,
+                "Astin": astin,
+                "Armhole": armhole,
+                "Shalwar": shalwar,
+                "Paicha": paicha,
+                "Loosing": loosing,
+                "Notes": note
+            }
+            st.session_state.orders.append(new_order)
+            st.success(f"✅ {name} ka naap list mein shamil ho gaya!")
+            st.balloons()
+        else:
+            st.error("Meharbani karke Naam likhen!")
 
-# --- Print & Save Section ---
-if st.button("Generate Print Slip"):
-    if name:
-        st.success(f"Order Saved for {name}!")
-        
-        # Print Slip Update
-        st.markdown(f"""
-        ---
-        ### 🧾 {shop_name} - Measurement Slip
-        **Customer:** {name} | **Phone:** {phone}
-        
-        **Kameez Details:**
-        * Lambai: {lambai} | Tera: {shoulder} | Chest: {chest} | Kamar: {kamar}
-        * Hip: {hip} | Chaak: {chaak} | Daman: {daman} | Gala: {gala}
-        
-        **Astin Details:**
-        * Astin: {astin_lambai} | Armhole: {arm_hole} | Astin Sar: {astin_sar}
-        
-        **Shalwar Details:**
-        * Lambai: {shalwar_lambai} | Paicha: {paicha} | Loosing: {loosing}
-        
-        **Notes:** {description}
-        ---
-        """)
-    else:
-        st.error("Pehle Customer ka Naam likhen!")
+# --- Table Display & Download ---
+if st.session_state.orders:
+    st.divider()
+    st.subheader("📑 Aaj ki Order List")
+    df = pd.DataFrame(st.session_state.orders)
+    st.dataframe(df) # Table dikhane ke liye
+
+    # Excel/CSV Download Button
+    csv = df.to_csv(index=False).encode('utf-8')
+    st.download_button(
+        label="📥 Poori List Download Karen (Excel/CSV)",
+        data=csv,
+        file_name=f"Shes_Style_Orders_{datetime.now().strftime('%d_%m')}.csv",
+        mime='text/csv',
+    )
+
+    if st.button("🗑️ List Khali Karen (Clear All)"):
+        st.session_state.orders = []
+        st.experimental_rerun()
