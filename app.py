@@ -7,7 +7,7 @@ st.set_page_config(page_title="She's Style Tailors", layout="wide")
 
 st.title("✂️ She's Style Tailors - Digital Register")
 
-# --- 1. Customer & Delivery ---
+# --- 1. Customer Details ---
 st.header("👤 Customer Details")
 col_inf1, col_inf2, col_inf3 = st.columns(3)
 with col_inf1:
@@ -19,54 +19,52 @@ with col_inf3:
 
 st.divider()
 
-# --- 2. Kameez Ka Nap (Detailed) ---
+# --- 2. Kameez Ka Nap ---
 st.header("📏 Kameez Ka Nap")
 k1, k2, k3, k4 = st.columns(4)
-
 with k1:
     l = st.number_input("Lambai (Length)", value=38.0, step=1.0)
     s = st.number_input("Shoulder (Tera)", value=14.0, step=1.0)
     c = st.number_input("Chest (Seena)", value=34.0, step=1.0)
-
 with k2:
     k = st.number_input("Kamar (Waist)", value=32.0, step=1.0)
     h = st.number_input("Hip", value=36.0, step=1.0)
-    chak = st.number_input("Chak", value=20.0, step=1.0) # Naya Add Hua
-
+    chak = st.number_input("Chak", value=20.0, step=1.0)
 with k3:
     daman = st.number_input("Daman", value=22.0, step=1.0)
-    astin = st.number_input("Astin (Sleeve)", value=20.0, step=1.0) # Naya Add Hua
-    armhole = st.number_input("Arm Hole", value=9.0, step=0.5) # Naya Add Hua
-
+    astin = st.number_input("Astin (Sleeve)", value=20.0, step=1.0)
+    armhole = st.number_input("Arm Hole", value=9.0, step=0.5)
 with k4:
-    dan_astin = st.number_input("Dan Astin", value=5.0, step=0.5) # Naya Add Hua
+    dan_astin = st.number_input("Dan Astin", value=5.0, step=0.5)
     gala_f = st.text_input("Gala Front", "6x7")
     gala_b = st.text_input("Gala Back", "Normal")
 
 st.divider()
 
-# --- 3. Shalwar Ka Nap (Alag Section) ---
+# --- 3. Shalwar Ka Nap ---
 st.header("👖 Shalwar Ka Nap")
 s1, s2, s3 = st.columns(3)
 with s1:
     s_l = st.number_input("Shalwar Lambai", value=38.0, step=1.0)
 with s2:
-    s_w = st.number_input("Shalwar Gher/Chodai", value=22.0, step=1.0) # Naya Add Hua
+    s_w = st.number_input("Shalwar Chodai", value=22.0, step=1.0)
 with s3:
     s_p = st.number_input("Paicha", value=6.5, step=0.5)
 
 st.divider()
 
-# --- 4. Billing ---
+# --- 4. Billing (ERROR FREE VERSION) ---
 st.header("💰 Billing")
-p1, p2 = st.columns(2)
-with p1:
-    total = st.number_input("Total Bill", value=1500, step=50.0)
-with p2:
-    adv = st.number_input("Advance Payment", value=500, step=50.0)
+p1, p2, p3 = st.columns(3)
 
-bal = total - adv
-st.metric(label="Baqi (Balance)", value=f"{bal}")
+with p1:
+    total_bill = st.number_input("Total Bill", value=1500.0, step=50.0)
+with p2:
+    advance_pay = st.number_input("Advance Payment", value=500.0, step=50.0)
+with p3:
+    # Calculation ko simple rakha hai taake error na aaye
+    remaining_bal = float(total_bill) - float(advance_pay)
+    st.metric(label="Baqi (Balance)", value=f"{remaining_bal}")
 
 note = st.text_area("Extra Notes (Lace, Piping, Design Details)")
 
@@ -96,12 +94,11 @@ if st.button("✅ SAVE & GENERATE RECEIPT", use_container_width=True):
         SHALWAR:
         L:{s_l} | Chodai:{s_w} | P:{s_p}
         ------------------
-        TOTAL: {total} | ADV: {adv}
-        BAL: {bal}
+        TOTAL: {total_bill} | ADV: {advance_pay}
+        BAL: {remaining_bal}
         ------------------
         Note: {note}
         """
         st.code(receipt_text)
-        st.info("Iski screenshot len aur iTech printer se print nikal len.")
     else:
         st.error("Meharbani karke Customer ka naam likhen!")
