@@ -1,4 +1,5 @@
 import streamlit as st
+from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 from datetime import datetime, timedelta
 
@@ -6,6 +7,11 @@ from datetime import datetime, timedelta
 st.set_page_config(page_title="She's Style Tailors", layout="wide")
 
 st.title("✂️ She's Style Tailors - Digital Register")
+
+# --- Google Sheets Connection ---
+# Aapki sheet ka link yahan connect ho raha hai
+conn = st.connection("gsheets", type=GSheetsConnection)
+url = "https://docs.google.com/spreadsheets/d/19hHI5vz6-LhnP_egTPGaRjmp89zelGEWPqcCZ0xrk7o/edit?usp=sharing"
 
 # --- 1. Customer Details ---
 st.header("👤 Customer Details")
@@ -53,16 +59,14 @@ with s3:
 
 st.divider()
 
-# --- 4. Billing (ERROR FREE VERSION) ---
+# --- 4. Billing ---
 st.header("💰 Billing")
 p1, p2, p3 = st.columns(3)
-
 with p1:
     total_bill = st.number_input("Total Bill", value=1500.0, step=50.0)
 with p2:
     advance_pay = st.number_input("Advance Payment", value=500.0, step=50.0)
 with p3:
-    # Calculation ko simple rakha hai taake error na aaye
     remaining_bal = float(total_bill) - float(advance_pay)
     st.metric(label="Baqi (Balance)", value=f"{remaining_bal}")
 
@@ -70,35 +74,35 @@ note = st.text_area("Extra Notes (Lace, Piping, Design Details)")
 
 # --- Action Button ---
 st.divider()
-if st.button("✅ SAVE & GENERATE RECEIPT", use_container_width=True):
+if st.button("✅ SAVE TO SHEET & GENERATE RECEIPT", use_container_width=True):
     if name:
-        st.success(f"Master Alii, {name} ka record ready he!")
-        st.balloons()
-        
-        # Receipt for iTech Printer
-        st.markdown("### 🧾 RECEIPT FOR PRINTER")
-        receipt_text = f"""
-        SHE'S STYLE TAILORS
-        ------------------
-        Name: {name}
-        Date: {datetime.now().strftime("%d-%m-%Y")}
-        Delivery: {d_date.strftime("%d-%m-%Y")}
-        ------------------
-        KAMEEZ:
-        L:{l} | S:{s} | C:{c}
-        K:{k} | H:{h} | Chak:{chak}
-        Dam:{daman} | Ast:{astin}
-        ArmH:{armhole} | DanA:{dan_astin}
-        Gala: F:{gala_f} / B:{gala_b}
-        ------------------
-        SHALWAR:
-        L:{s_l} | Chodai:{s_w} | P:{s_p}
-        ------------------
-        TOTAL: {total_bill} | ADV: {advance_pay}
-        BAL: {remaining_bal}
-        ------------------
-        Note: {note}
-        """
-        st.code(receipt_text)
+        try:
+            # Data tayyar karna
+            new_data = pd.DataFrame([{
+                "Date": datetime.now().strftime("%d-%m-%Y"),
+                "Name": name, "Phone": phone, "Delivery": d_date.strftime("%d-%m-%Y"),
+                "L": l, "S": s, "C": c, "K": k, "H": h, "Chak": chak, "D": daman,
+                "Astin": astin, "ArmH": armhole, "DanA": dan_astin,
+                "Gala_F": gala_f, "Gala_B": gala_b,
+                "Sh_L": s_l, "Sh_W": s_w, "Sh_P": s_p,
+                "Total": total_bill, "Advance": advance_pay, "Balance": remaining_bal,
+                "Note": note
+            }])
+            
+            # Maujooda data parhna aur naya add karna
+            existing_df = conn.read(spreadsheet=url)
+            updated_df = pd.concat([existing_df, new_data], ignore_index=True)
+            
+            # Google Sheet update karna
+            conn.update(spreadsheet=url, data=updated_df)
+            
+            st.success(f"Mubarak ho! {name} ka record Google Sheet mein save ho gaya.")
+            st.balloons()
+            
+            # Receipt for Screenshot
+            st.code(f"SHE'S STYLE TAILORS\nName: {name}\nL:{l} S:{s} C:{c}\nBAL: {remaining_bal}")
+            
+        except Exception as e:
+            st.error(f"Sheet mein save nahi hua. Wajah: {e}")
     else:
-        st.error("Meharbani karke Customer ka naam likhen!")
+        st.error("Pehle Customer ka naam likhen!")
