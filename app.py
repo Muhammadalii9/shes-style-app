@@ -52,14 +52,16 @@ with s3:
 
 st.divider()
 
-# --- 4. Billing ---
+# --- 4. Billing (Fixed Numeric Error) ---
 st.header("💰 Billing")
 b1, b2 = st.columns(2)
 with b1:
-    total = st.number_input("Total Bill", value=1500, step=50.0)
+    # Saari values .0 ke saath hain taake mixed type error na aaye
+    total = st.number_input("Total Bill", value=1500.0, step=50.0)
 with b2:
-    adv = st.number_input("Advance", value=500, step=50.0)
-bal = total - adv
+    adv = st.number_input("Advance Payment", value=500.0, step=50.0)
+
+bal = float(total) - float(adv)
 st.metric("Baqi (Balance)", f"{bal}")
 
 note = st.text_area("Extra Notes")
@@ -67,9 +69,9 @@ note = st.text_area("Extra Notes")
 st.divider()
 
 # --- Action Button ---
-if st.button("✅ GENERATE RECEIPT & SAVE", use_container_width=True):
+if st.button("✅ GENERATE RECEIPT & OPEN SHEET", use_container_width=True):
     if name:
-        st.success(f"{name} ka record ready hai!")
+        st.success(f"Master Alii, {name} ka record ready hai!")
         
         # Receipt UI
         st.markdown("### 🧾 RECEIPT FOR iTech PRINTER")
@@ -95,8 +97,8 @@ if st.button("✅ GENERATE RECEIPT & SAVE", use_container_width=True):
         st.code(receipt)
         st.balloons()
         
-        st.warning("⚠️ Record sheet mein bhejne ke liye niche wala button dabayen:")
-        # Yahan apna Google Form ka link dal sakte hain
-        st.link_button("📂 Open Google Sheet Form", "https://docs.google.com/spreadsheets/d/19hHI5vz6-LhnP_egTPGaRjmp89zelGEWPqcCZ0xrk7o/edit")
+        # Direct Google Sheet link for data entry
+        st.warning("⚠️ Google block kar raha hai, is liye data direct sheet mein enter karen:")
+        st.link_button("📂 Go to Google Sheet", "https://docs.google.com/spreadsheets/d/19hHI5vz6-LhnP_egTPGaRjmp89zelGEWPqcCZ0xrk7o/edit")
     else:
-        st.error("Pehle Naam likhen!")
+        st.error("Meharbani karke pehle Customer ka naam likhen!")
