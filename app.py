@@ -63,7 +63,7 @@ b1, b2 = st.columns(2)
 with b1:
     total = st.number_input("Total Bill", value=1000.0, step=100.0)
 with b2:
-    adv = st.number_input("Advance Payment", value=000.0, step=100.0)
+    adv = st.number_input("Advance Payment", value=0.0, step=100.0)
 
 bal = float(total) - float(adv)
 st.metric("Baqi (Balance)", f"{bal}")
@@ -75,9 +75,13 @@ st.divider()
 # --- Actions ---
 if st.button("✅ GENERATE RECEIPT", use_container_width=True):
     if name:
+        # Delivery Date ko asaan format mein convert karna
+        formatted_delivery = d_date.strftime("%d-%m-%Y")
+        
         # Data ko list mein add karna
         new_entry = {
             "Date": datetime.now().strftime("%d-%m-%Y"),
+            "Delivery_Date": formatted_delivery,
             "Name": name, "Phone": phone, "L": l, "S": s, "C": c, "K": k, 
             "H": h, "Chak": chak, "D": daman, "Ast": astin, "AH": armh, 
             "DA": dana, "G_F": gf, "G_B": gb, "SL": sl, "SW": sw, "SP": sp,
@@ -89,11 +93,15 @@ if st.button("✅ GENERATE RECEIPT", use_container_width=True):
         
         # Receipt for Printer
         st.markdown("### 🧾 RECEIPT FOR iTech PRINTER")
+        # Yahan Delivery Date ko Receipt ke ooper wazeh kar diya hai
         receipt = f"""
         SHE'S STYLE TAILORS
         ------------------
-        Name: {name} | Date: {datetime.now().strftime("%d-%m")}
+        Name: {name}
+        Order Date: {datetime.now().strftime("%d-%m-%Y")}
+        DELIVERY: {formatted_delivery}
         ------------------
+        KAMEEZ:
         L:{l} | S:{s} | C:{c} | K:{k}
         H:{h} | Chak:{chak} | D:{daman}
         Ast:{astin} | AH:{armh} | DA:{dana}
