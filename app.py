@@ -92,7 +92,7 @@ if st.button("✅ GENERATE RECEIPT", use_container_width=True):
         receipt = f"""
         SHE'S STYLE TAILORS
         ------------------
-        Name: {name} | Date: {datetime.now().strftime("%d-%m")}
+        Name: {name} | Date: {timedelta().strftime("%d-%m")}
         ------------------
         L:{l} | S:{s} | C:{c} | K:{k}
         H:{h} | Chak:{chak} | D:{daman}
