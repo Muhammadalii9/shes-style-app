@@ -77,7 +77,7 @@ if st.button("✅ GENERATE RECEIPT", use_container_width=True):
     if name:
         # Data ko list mein add karna
         new_entry = {
-            "Date": timedelta(days=7)).strftime("%d-%m-%Y"),
+            "Date": datetime.now().strftime("%d-%m-%Y"),
             "Name": name, "Phone": phone, "L": l, "S": s, "C": c, "K": k, 
             "H": h, "Chak": chak, "D": daman, "Ast": astin, "AH": armh, 
             "DA": dana, "G_F": gf, "G_B": gb, "SL": sl, "SW": sw, "SP": sp,
@@ -92,7 +92,7 @@ if st.button("✅ GENERATE RECEIPT", use_container_width=True):
         receipt = f"""
         SHE'S STYLE TAILORS
         ------------------
-        Name: {name} | Date: {timedelta(days=7)).strftime("%d-%m")}
+        Name: {name} | Date: {datetime.now().strftime("%d-%m")}
         ------------------
         L:{l} | S:{s} | C:{c} | K:{k}
         H:{h} | Chak:{chak} | D:{daman}
