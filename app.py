@@ -27,16 +27,16 @@ st.divider()
 st.header("📏 Kameez Ka Nap")
 k1, k2, k3, k4 = st.columns(4)
 with k1:
-    l = st.number_input("Lambai", value=38.0, step=1.0)
-    s = st.number_input("Shoulder", value=14.0, step=1.0)
-    c = st.number_input("Chest", value=20.0, step=1.0)
+    l = st.number_input("Lambai", value=38.0, step=0.5)
+    s = st.number_input("Shoulder", value=14.0, step=0.5)
+    c = st.number_input("Chest", value=20.0, step=0.5)
 with k2:
-    k = st.number_input("Kamar", value=18.0, step=1.0)
-    h = st.number_input("Hip", value=21.0, step=1.0)
-    chak = st.number_input("Chak", value=12.0, step=1.0)
+    k = st.number_input("Kamar", value=18.0, step=0.5)
+    h = st.number_input("Hip", value=21.0, step=0.5)
+    chak = st.number_input("Chak", value=12.0, step=0.5)
 with k3:
-    daman = st.number_input("Daman", value=22.0, step=1.0)
-    astin = st.number_input("Astin", value=20.0, step=1.0)
+    daman = st.number_input("Daman", value=22.0, step=0.5)
+    astin = st.number_input("Astin", value=20.0, step=0.5)
     armh = st.number_input("Arm Hole", value=9.0, step=0.5)
 with k4:
     dana = st.number_input("Dan Astin", value=6.0, step=0.5)
@@ -49,9 +49,9 @@ st.divider()
 st.header("👖 Shalwar Ka Nap")
 s1, s2, s3 = st.columns(3)
 with s1:
-    sl = st.number_input("Shalwar Lambai", value=36.0, step=1.0)
+    sl = st.number_input("Shalwar Lambai", value=36.0, step=0.5)
 with s2:
-    sw = st.number_input("Shalwar Chodai", value=16.0, step=1.0)
+    sw = st.number_input("Shalwar loosing", value=16.0, step=0.5)
 with s3:
     sp = st.number_input("Paicha", value=7.5, step=0.5)
 
@@ -61,9 +61,9 @@ st.divider()
 st.header("💰 Billing")
 b1, b2 = st.columns(2)
 with b1:
-    total = st.number_input("Total Bill", value=1000.0, step=50.0)
+    total = st.number_input("Total Bill", value=1000.0, step=100.0)
 with b2:
-    adv = st.number_input("Advance Payment", value=500.0, step=50.0)
+    adv = st.number_input("Advance Payment", value=000.0, step=100.0)
 
 bal = float(total) - float(adv)
 st.metric("Baqi (Balance)", f"{bal}")
@@ -77,7 +77,7 @@ if st.button("✅ GENERATE RECEIPT", use_container_width=True):
     if name:
         # Data ko list mein add karna
         new_entry = {
-            "Date": datetime.now().strftime("%d-%m-%Y"),
+            "Date": timedelta(days=7)).strftime("%d-%m-%Y"),
             "Name": name, "Phone": phone, "L": l, "S": s, "C": c, "K": k, 
             "H": h, "Chak": chak, "D": daman, "Ast": astin, "AH": armh, 
             "DA": dana, "G_F": gf, "G_B": gb, "SL": sl, "SW": sw, "SP": sp,
@@ -100,7 +100,7 @@ if st.button("✅ GENERATE RECEIPT", use_container_width=True):
         Gala: F:{gf} / B:{gb}
         ------------------
         SHALWAR:
-        L:{sl} | Chodai:{sw} | P:{sp}
+        L:{sl} | loosing:{sw} | P:{sp}
         ------------------
         BILL: {total} | ADV: {adv} | BAL: {bal}
         ------------------
