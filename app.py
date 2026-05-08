@@ -43,7 +43,7 @@ st.divider()
 
 # --- Shalwar ---
 st.header("👖 Shalwar Details")
-s1, s2, s3, s4 = st.columns(3)
+s1, s2, s3, s4 = st.columns(4)
 with s1:
     sl = st.number_input("Shalwar Lambai", value=36.0, step=0.5)
 with s2:
