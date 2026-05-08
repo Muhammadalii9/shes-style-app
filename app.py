@@ -1,18 +1,48 @@
 import streamlit as st
 import pandas as pd
+import os
 from datetime import datetime, timedelta
 
 # --- Page Setup ---
 st.set_page_config(page_title="She's Style Tailors", layout="wide")
 
-# --- Initialize Database (Session State) ---
-# Ye code aapka data temporary save rakhega jab tak app chal rahi hai
-if 'tailor_db' not in st.session_state:
-    st.session_state.tail_db = []
+# --- Permanent Database Logic ---
+DB_FILE = "tailor_data.csv"
 
-st.title("✂️ She's Style Tailors - MacBook POS")
+# File se data load karne ka function
+def load_data():
+    if os.path.exists(DB_FILE):
+        return pd.read_csv(DB_FILE)
+    return pd.DataFrame()
 
-# --- Form Inputs ---
+# File mein data save karne ka function
+def save_to_file(new_record):
+    df = load_data()
+    # Naye record ko purane data mein shamil karna
+    updated_df = pd.concat([df, pd.DataFrame([new_record])], ignore_index=True)
+    updated_df.to_csv(DB_FILE, index=False)
+
+st.title("✂️ She's Style Tailors - Permanent POS")
+
+# --- 🔍 CUSTOMER SEARCH (Har waqt active) ---
+st.header("🔍 Search Purana Naap")
+search_query = st.text_input("Customer ka Naam ya Phone likhen:")
+
+db = load_data()
+if search_query and not db.empty:
+    # Column names ko string mein convert kar ke search karna
+    results = db[db['Name'].astype(str).str.contains(search_query, case=False, na=False) | 
+                db['Phone'].astype(str).str.contains(search_query, na=False)]
+    
+    if not results.empty:
+        st.success(f"✅ {len(results)} Record(s) Mil Gaye:")
+        st.dataframe(results)
+    else:
+        st.warning("❌ Koi record nahi mila.")
+
+st.divider()
+
+# --- Form Inputs (Wahi jo aapne pehle banaye hain) ---
 st.header("👤 Customer & Order")
 c1, c2, c3 = st.columns(3)
 with c1:
@@ -24,7 +54,7 @@ with c3:
 
 st.divider()
 
-# --- Measurements ---
+# --- Measurements (Kameez & Shalwar) ---
 st.header("📏 Measurements")
 k1, k2, k3, k4 = st.columns(4)
 with k1:
@@ -44,9 +74,6 @@ with k4:
     gf = st.text_input("Gala Front", "7x5")
     gb = st.text_input("Gala Back", "Normal")
 
-st.divider()
-
-# --- Shalwar Details ---
 st.header("👖 Shalwar Details")
 s1, s2, s3, s4 = st.columns(4)
 with s1:
@@ -66,69 +93,39 @@ with b1:
     total = st.number_input("Total Bill", value=1000.0, step=100.0)
 with b2:
     adv = st.number_input("Advance Payment", value=0.0, step=100.0)
-
 bal = float(total) - float(adv)
 st.metric("BAQI (BALANCE)", f"Rs. {bal}")
 
 note = st.text_area("Karigar Note")
 
 # --- Action Buttons ---
-col_save, col_print = st.columns(2)
-
-with col_save:
-    if st.button("💾 SAVE RECORD", use_container_width=True):
-        if name:
-            new_record = {
-                "Date": datetime.now().strftime("%d/%m/%Y"),
-                "Name": name,
-                "Phone": phone,
-                "Delivery": d_date.strftime("%d/%m/%Y"),
-                "Lambai": l, "Shoulder": s, "Chest": c, "Kamar": k,
-                "Hip": h, "Chak": chak, "Daman": daman, "Astin": astin,
-                "ArmHole": armh, "DanAstin": dana, "GalaF": gf, "GalaB": gb,
-                "ShalwarDesign": sd, "ShalwarL": sl, "ShalwarLoos": sw, "Paicha": sp,
-                "Total": total, "Advance": adv, "Balance": bal, "Note": note
-            }
-            st.session_state.tail_db.append(new_record)
-            st.success(f"Record for {name} saved successfully!")
-        else:
-            st.error("Please enter a name first!")
-
-with col_print:
-    if st.button("🖨️ PREPARE RECEIPT", use_container_width=True):
-        if name:
-            # Receipt Display (Same as before)
-            st.markdown(f"""
-            <div style="background-color: white; color: black; padding: 20px; font-family: 'Courier New', Courier, monospace; border: 1px solid #ccc; width: 300px; margin: auto;">
-                <h3 style="text-align: center;">SHE'S STYLE TAILORS</h3>
-                <hr>
-                <p>NAME: {name.upper()}</p>
-                <p>DELIVERY: {d_date.strftime("%d/%m/%Y")}</p>
-                <hr>
-                <p>TOTAL: Rs. {total} | BAL: Rs. {bal}</p>
-                <hr>
-                <p style="font-size: 10px; text-align: center;">Record Saved in Database</p>
-            </div>
-            """, unsafe_allow_html=True)
-        else:
-            st.error("Pehle Name likhen!")
+if st.button("💾 SAVE & FINISH", use_container_width=True):
+    if name:
+        record = {
+            "Date": datetime.now().strftime("%Y-%m-%d"),
+            "Name": name, "Phone": phone, "Delivery": d_date.strftime("%Y-%m-%d"),
+            "L": l, "S": s, "C": c, "K": k, "H": h, "Chak": chak, 
+            "Daman": daman, "Astin": astin, "AH": armh, "DanA": dana, 
+            "GalaF": gf, "GalaB": gb, "ShalwarD": sd, "ShalwarL": sl, 
+            "ShalwarLoos": sw, "Paicha": sp, "Total": total, "Adv": adv, 
+            "Bal": bal, "Note": note
+        }
+        save_to_file(record)
+        st.success(f"✅ {name} ka record MacBook mein hamesha ke liye save ho gaya!")
+        st.balloons()
+    else:
+        st.error("Pehle Naam likhen!")
 
 st.divider()
 
-# --- Database View & Download ---
-st.header("📊 Business Records")
-if st.session_state.tail_db:
-    df = pd.DataFrame(st.session_state.tail_db)
-    st.dataframe(df) # Screen par table dikhayega
+# --- Database View ---
+st.header("📊 All Business Records")
+current_db = load_data()
+if not current_db.empty:
+    st.dataframe(current_db)
     
-    # Download Button
-    csv = df.to_csv(index=False).encode('utf-8')
-    st.download_button(
-        label="📥 DOWNLOAD EXCEL (CSV) FILE",
-        data=csv,
-        file_name=f"Tailor_Records_{datetime.now().strftime('%Y%m%d')}.csv",
-        mime='text/csv',
-        use_container_width=True
-    )
+    # Download button for backup
+    csv = current_db.to_csv(index=False).encode('utf-8')
+    st.download_button("📥 Download Excel Backup", csv, "tailor_backup.csv", "text/csv")
 else:
-    st.info("Abhi tak koi record save nahi hua.")
+    st.info("Abhi koi record nahi hai.")
