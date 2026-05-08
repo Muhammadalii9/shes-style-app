@@ -5,14 +5,10 @@ from datetime import datetime, timedelta
 # --- Page Setup ---
 st.set_page_config(page_title="She's Style Tailors", layout="wide")
 
-st.title("✂️ She's Style Tailors - Digital Register")
+st.title("✂️ She's Style Tailors - MacBook POS")
 
-# Data ko temporary yaad rakhne ke liye
-if 'temp_data' not in st.session_state:
-    st.session_state.temp_data = []
-
-# --- 1. Customer Details ---
-st.header("👤 Customer Details")
+# --- Form Inputs ---
+st.header("👤 Customer & Order")
 c1, c2, c3 = st.columns(3)
 with c1:
     name = st.text_input("Customer Name")
@@ -23,8 +19,8 @@ with c3:
 
 st.divider()
 
-# --- 2. Kameez Ka Nap ---
-st.header("📏 Kameez Ka Nap")
+# --- Measurements ---
+st.header("📏 Measurements")
 k1, k2, k3, k4 = st.columns(4)
 with k1:
     l = st.number_input("Lambai", value=38.0, step=0.5)
@@ -45,93 +41,61 @@ with k4:
 
 st.divider()
 
-# --- 3. Shalwar Ka Nap ---
-st.header("👖 Shalwar Ka Nap")
+# --- Shalwar ---
+st.header("👖 Shalwar Details")
 s1, s2, s3 = st.columns(3)
 with s1:
     sl = st.number_input("Shalwar Lambai", value=36.0, step=0.5)
 with s2:
-    sw = st.number_input("Shalwar loosing", value=16.0, step=0.5)
+    sw = st.number_input("Shalwar Loosing", value=16.0, step=0.5)
 with s3:
     sp = st.number_input("Paicha", value=7.5, step=0.5)
 
 st.divider()
 
-# --- 4. Billing ---
-st.header("💰 Billing")
+# --- Billing ---
 b1, b2 = st.columns(2)
 with b1:
     total = st.number_input("Total Bill", value=1000.0, step=100.0)
 with b2:
     adv = st.number_input("Advance Payment", value=0.0, step=100.0)
-
 bal = float(total) - float(adv)
-st.metric("Baqi (Balance)", f"{bal}")
+st.metric("BAQI (BALANCE)", f"Rs. {bal}")
 
-note = st.text_area("Extra Notes")
+note = st.text_area("Karigar Note")
 
-st.divider()
-
-# --- Actions ---
-if st.button("✅ GENERATE RECEIPT", use_container_width=True):
+# --- Print Action ---
+if st.button("✅ PREPARE RECEIPT", use_container_width=True):
     if name:
-        # Delivery Date ko asaan format mein convert karna
-        formatted_delivery = d_date.strftime("%d-%m-%Y")
+        order_date = datetime.now().strftime("%d/%m/%Y")
+        delivery_str = d_date.strftime("%d/%m/%Y")
         
-        # Data ko list mein add karna
-        new_entry = {
-            "Date": datetime.now().strftime("%d-%m-%Y"),
-            "Delivery_Date": formatted_delivery,
-            "Name": name, "Phone": phone, "L": l, "S": s, "C": c, "K": k, 
-            "H": h, "Chak": chak, "D": daman, "Ast": astin, "AH": armh, 
-            "DA": dana, "G_F": gf, "G_B": gb, "SL": sl, "SW": sw, "SP": sp,
-            "Total": total, "Adv": adv, "Bal": bal, "Note": note
-        }
-        st.session_state.temp_data.append(new_entry)
+        # Receipt UI
+        st.markdown(f"""
+        <div style="background-color: white; color: black; padding: 20px; font-family: monospace; border: 1px solid #ccc; width: 300px; margin: auto;">
+            <h3 style="text-align: center;">SHE'S STYLE TAILORS</h3>
+            <p style="text-align: center;">Quetta, Pakistan</p>
+            <hr>
+            <p>NAME: {name.upper()}</p>
+            <p>DATE: {order_date}</p>
+            <p>DELIVERY: {delivery_str}</p>
+            <hr>
+            <p>L:{l} S:{s} C:{c} K:{k}</p>
+            <p>H:{h} Chak:{chak} D:{daman}</p>
+            <p>Ast:{astin} AH:{armh} DA:{dana}</p>
+            <p>Gala: {gf} / {gb}</p>
+            <hr>
+            <p>SHALWAR: L:{sl} Loos:{sw} P:{sp}</p>
+            <hr>
+            <p>TOTAL: Rs. {total}</p>
+            <p>ADV:   Rs. {adv}</p>
+            <p><b>BAL:   Rs. {bal}</b></p>
+            <hr>
+            <p style="text-align: center; font-size: 10px;">{note}</p>
+            <p style="text-align: center;">*** THANK YOU ***</p>
+        </div>
+        """, unsafe_allow_html=True)
         
-        st.success(f"{name} ka record ready hai!")
-        
-        # Receipt for Printer
-        st.markdown("### 🧾 RECEIPT FOR iTech PRINTER")
-        # Yahan Delivery Date ko Receipt ke ooper wazeh kar diya hai
-        receipt = f"""
-        SHE'S STYLE TAILORS
-        ------------------
-        Name: {name}
-        Order Date: {datetime.now().strftime("%d-%m-%Y")}
-        DELIVERY: {formatted_delivery}
-        ------------------
-        KAMEEZ:
-        L:{l} | S:{s} | C:{c} | K:{k}
-        H:{h} | Chak:{chak} | D:{daman}
-        Ast:{astin} | AH:{armh} | DA:{dana}
-        Gala: F:{gf} / B:{gb}
-        ------------------
-        SHALWAR:
-        L:{sl} | loosing:{sw} | P:{sp}
-        ------------------
-        BILL: {total} | ADV: {adv} | BAL: {bal}
-        ------------------
-        Note: {note}
-        """
-        st.code(receipt)
-        st.info("Iski screenshot len aur iTech printer se print nikal len.")
-        st.balloons()
+        st.info("💡 MacBook par Print ke liye: **Command + P** dabayen.")
     else:
         st.error("Pehle Name likhen!")
-
-# --- Permanent Save Section ---
-if st.session_state.temp_data:
-    st.divider()
-    st.subheader("📁 Save to Mobile Memory")
-    df = pd.DataFrame(st.session_state.temp_data)
-    csv = df.to_csv(index=False).encode('utf-8')
-    
-    st.download_button(
-        label="📥 DOWNLOAD RECORD FILE (CSV)",
-        data=csv,
-        file_name=f"Tailor_Records_{datetime.now().strftime('%d_%b')}.csv",
-        mime='text/csv',
-        use_container_width=True
-    )
-    st.write("Ye file aap ke mobile ke 'Downloads' folder mein save hogi.")
