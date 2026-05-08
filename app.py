@@ -43,14 +43,16 @@ st.divider()
 
 # --- Shalwar ---
 st.header("👖 Shalwar Details")
-s1, s2, s3 = st.columns(3)
+s1, s2, s3, s4 = st.columns(3)
 with s1:
     sl = st.number_input("Shalwar Lambai", value=36.0, step=0.5)
 with s2:
     sw = st.number_input("Shalwar Loosing", value=16.0, step=0.5)
 with s3:
     sp = st.number_input("Paicha", value=7.5, step=0.5)
-
+with s4:
+    sp = st.text_input("shalwar")
+    
 st.divider()
 
 # --- Billing ---
@@ -91,7 +93,7 @@ if st.button("✅ PREPARE RECEIPT", use_container_width=True):
             <p>ADV:   Rs. {adv}</p>
             <p><b>BAL:   Rs. {bal}</b></p>
             <hr>
-            <p style="text-align: center; font-size: 10px;">{note}</p>
+            <p style="text-align: center; font-size: 20px;">{note}</p>
             <p style="text-align: center;">*** THANK YOU ***</p>
         </div>
         """, unsafe_allow_html=True)
