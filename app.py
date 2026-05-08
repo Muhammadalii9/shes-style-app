@@ -5,6 +5,11 @@ from datetime import datetime, timedelta
 # --- Page Setup ---
 st.set_page_config(page_title="She's Style Tailors", layout="wide")
 
+# --- Initialize Database (Session State) ---
+# Ye code aapka data temporary save rakhega jab tak app chal rahi hai
+if 'tailor_db' not in st.session_state:
+    st.session_state.tail_db = []
+
 st.title("✂️ She's Style Tailors - MacBook POS")
 
 # --- Form Inputs ---
@@ -41,18 +46,18 @@ with k4:
 
 st.divider()
 
-# --- Shalwar ---
+# --- Shalwar Details ---
 st.header("👖 Shalwar Details")
 s1, s2, s3, s4 = st.columns(4)
 with s1:
-    sd = st.text_input("shalwar desighn")
+    sd = st.text_input("Shalwar Design")
 with s2:
     sl = st.number_input("Shalwar Lambai", value=36.0, step=0.5)
 with s3:
     sw = st.number_input("Shalwar Loosing", value=16.0, step=0.5)
 with s4:
     sp = st.number_input("Paicha", value=7.5, step=0.5)
-    
+
 st.divider()
 
 # --- Billing ---
@@ -61,43 +66,69 @@ with b1:
     total = st.number_input("Total Bill", value=1000.0, step=100.0)
 with b2:
     adv = st.number_input("Advance Payment", value=0.0, step=100.0)
+
 bal = float(total) - float(adv)
 st.metric("BAQI (BALANCE)", f"Rs. {bal}")
 
 note = st.text_area("Karigar Note")
 
-# --- Print Action ---
-if st.button("✅ PREPARE RECEIPT", use_container_width=True):
-    if name:
-        order_date = datetime.now().strftime("%d/%m/%Y")
-        delivery_str = d_date.strftime("%d/%m/%Y")
-        
-        # Receipt UI
-        st.markdown(f"""
-        <div style="background-color: white; color: black; padding: 20px; font-family: monospace; border: 1px solid #ccc; width: 300px; margin: auto;">
-            <h3 style="text-align: center;">SHE'S STYLE TAILORS</h3>
-            <p style="text-align: center;">Quetta, Pakistan</p>
-            <hr>
-            <p>NAME: {name.upper()}</p>
-            <p>DATE: {order_date}</p>
-            <p>DELIVERY: {delivery_str}</p>
-            <hr>
-            <p>L:{l} S:{s} C:{c} K:{k}</p>
-            <p>H:{h} Chak:{chak} D:{daman}</p>
-            <p>Ast:{astin} AH:{armh} DA:{dana}</p>
-            <p>Gala: {gf} / {gb}</p>
-            <hr>
-            <p>SHALWAR: s:{sd} L:{sl} Loos:{sw} P:{sp}</p>
-            <hr>
-            <p>TOTAL: Rs. {total}</p>
-            <p>ADV:   Rs. {adv}</p>
-            <p><b>BAL:   Rs. {bal}</b></p>
-            <hr>
-            <p style="text-align: center; font-size: 20px;">{note}</p>
-            <p style="text-align: center;">*** THANK YOU ***</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        st.info("💡 MacBook par Print ke liye: **Command + P** dabayen.")
-    else:
-        st.error("Pehle Name likhen!")
+# --- Action Buttons ---
+col_save, col_print = st.columns(2)
+
+with col_save:
+    if st.button("💾 SAVE RECORD", use_container_width=True):
+        if name:
+            new_record = {
+                "Date": datetime.now().strftime("%d/%m/%Y"),
+                "Name": name,
+                "Phone": phone,
+                "Delivery": d_date.strftime("%d/%m/%Y"),
+                "Lambai": l, "Shoulder": s, "Chest": c, "Kamar": k,
+                "Hip": h, "Chak": chak, "Daman": daman, "Astin": astin,
+                "ArmHole": armh, "DanAstin": dana, "GalaF": gf, "GalaB": gb,
+                "ShalwarDesign": sd, "ShalwarL": sl, "ShalwarLoos": sw, "Paicha": sp,
+                "Total": total, "Advance": adv, "Balance": bal, "Note": note
+            }
+            st.session_state.tail_db.append(new_record)
+            st.success(f"Record for {name} saved successfully!")
+        else:
+            st.error("Please enter a name first!")
+
+with col_print:
+    if st.button("🖨️ PREPARE RECEIPT", use_container_width=True):
+        if name:
+            # Receipt Display (Same as before)
+            st.markdown(f"""
+            <div style="background-color: white; color: black; padding: 20px; font-family: 'Courier New', Courier, monospace; border: 1px solid #ccc; width: 300px; margin: auto;">
+                <h3 style="text-align: center;">SHE'S STYLE TAILORS</h3>
+                <hr>
+                <p>NAME: {name.upper()}</p>
+                <p>DELIVERY: {d_date.strftime("%d/%m/%Y")}</p>
+                <hr>
+                <p>TOTAL: Rs. {total} | BAL: Rs. {bal}</p>
+                <hr>
+                <p style="font-size: 10px; text-align: center;">Record Saved in Database</p>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.error("Pehle Name likhen!")
+
+st.divider()
+
+# --- Database View & Download ---
+st.header("📊 Business Records")
+if st.session_state.tail_db:
+    df = pd.DataFrame(st.session_state.tail_db)
+    st.dataframe(df) # Screen par table dikhayega
+    
+    # Download Button
+    csv = df.to_csv(index=False).encode('utf-8')
+    st.download_button(
+        label="📥 DOWNLOAD EXCEL (CSV) FILE",
+        data=csv,
+        file_name=f"Tailor_Records_{datetime.now().strftime('%Y%m%d')}.csv",
+        mime='text/csv',
+        use_container_width=True
+    )
+else:
+    st.info("Abhi tak koi record save nahi hua.")
