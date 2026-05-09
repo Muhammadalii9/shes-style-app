@@ -30,7 +30,7 @@ def delete_record(index_to_delete):
         return True
     return False
 
-st.title("✂️ She's Style Tailors - digital massurement book")
+st.title("✂️ She's Style Tailors - digital measurement book")
 
 # --- 🔍 1. SEARCH SECTION ---
 st.header("🔍 Search Customer (Purana Naap)")
