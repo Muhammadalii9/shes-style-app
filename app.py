@@ -9,40 +9,32 @@ st.set_page_config(page_title="She's Style Tailors", layout="wide")
 # --- Permanent Database Logic ---
 DB_FILE = "tailor_data.csv"
 
-# File se data load karne ka function
 def load_data():
     if os.path.exists(DB_FILE):
         return pd.read_csv(DB_FILE)
     return pd.DataFrame()
 
-# File mein data save karne ka function
 def save_to_file(new_record):
     df = load_data()
-    # Naye record ko purane data mein shamil karna
     updated_df = pd.concat([df, pd.DataFrame([new_record])], ignore_index=True)
     updated_df.to_csv(DB_FILE, index=False)
 
-st.title("✂️ She's Style Tailors - Permanent POS")
+st.title("✂️ She's Style Tailors - POS System")
 
-# --- 🔍 CUSTOMER SEARCH (Har waqt active) ---
-st.header("🔍 Search Purana Naap")
-search_query = st.text_input("Customer ka Naam ya Phone likhen:")
-
+# --- 🔍 SEARCH SECTION ---
+st.header("🔍 Search Customer")
+search_query = st.text_input("Naam ya Phone Number likhen:")
 db = load_data()
+
 if search_query and not db.empty:
-    # Column names ko string mein convert kar ke search karna
     results = db[db['Name'].astype(str).str.contains(search_query, case=False, na=False) | 
                 db['Phone'].astype(str).str.contains(search_query, na=False)]
-    
     if not results.empty:
-        st.success(f"✅ {len(results)} Record(s) Mil Gaye:")
+        st.success(f"✅ {len(results)} Record mil gaya!")
         st.dataframe(results)
-    else:
-        st.warning("❌ Koi record nahi mila.")
-
 st.divider()
 
-# --- Form Inputs (Wahi jo aapne pehle banaye hain) ---
+# --- FORM SECTION ---
 st.header("👤 Customer & Order")
 c1, c2, c3 = st.columns(3)
 with c1:
@@ -52,9 +44,7 @@ with c2:
 with c3:
     d_date = st.date_input("Delivery Date", datetime.now() + timedelta(days=7))
 
-st.divider()
-
-# --- Measurements (Kameez & Shalwar) ---
+# --- Measurements ---
 st.header("📏 Measurements")
 k1, k2, k3, k4 = st.columns(4)
 with k1:
@@ -95,12 +85,12 @@ with b2:
     adv = st.number_input("Advance Payment", value=0.0, step=100.0)
 bal = float(total) - float(adv)
 st.metric("BAQI (BALANCE)", f"Rs. {bal}")
-
 note = st.text_area("Karigar Note")
 
-# --- Action Buttons ---
-if st.button("💾 SAVE & FINISH", use_container_width=True):
+# --- ACTION BUTTON ---
+if st.button("💾 SAVE & GENERATE RECEIPT", use_container_width=True):
     if name:
+        # 1. Computer mein save karna
         record = {
             "Date": datetime.now().strftime("%Y-%m-%d"),
             "Name": name, "Phone": phone, "Delivery": d_date.strftime("%Y-%m-%d"),
@@ -111,21 +101,40 @@ if st.button("💾 SAVE & FINISH", use_container_width=True):
             "Bal": bal, "Note": note
         }
         save_to_file(record)
-        st.success(f"✅ {name} ka record MacBook mein hamesha ke liye save ho gaya!")
+        st.success(f"✅ {name} ka record Computer mein save ho gaya!")
+        
+        # 2. Raseed (Receipt) Screen par dikhana
+        st.markdown(f"""
+        <div style="background-color: white; color: black; padding: 20px; font-family: 'Courier New', Courier, monospace; border: 2px solid black; width: 320px; margin: auto; line-height: 1.2;">
+            <h2 style="text-align: center; margin: 0;">SHE'S STYLE</h2>
+            <p style="text-align: center; margin: 0; font-size: 12px;">TAILORS - QUETTA</p>
+            <hr style="border-top: 2px solid black;">
+            <p><b>NAME:</b> {name.upper()}</p>
+            <p><b>DATE:</b> {datetime.now().strftime("%d/%m/%Y")}</p>
+            <p style="background-color: #eee; padding: 5px;"><b>DELIVERY: {d_date.strftime("%d/%m/%Y")}</b></p>
+            <hr style="border-top: 1px dashed black;">
+            <p><b>KAMEEZ:</b> {l} | {s} | {c} | {k}</p>
+            <p>H:{h} | Ch:{chak} | D:{daman} | Ast:{astin}</p>
+            <p>Gala: {gf} / {gb}</p>
+            <hr style="border-top: 1px dashed black;">
+            <p><b>SHALWAR:</b> {sd}</p>
+            <p>L:{sl} | Loos:{sw} | P:{sp}</p>
+            <hr style="border-top: 2px solid black;">
+            <p>TOTAL: Rs. {total}</p>
+            <p>ADVANCE: Rs. {adv}</p>
+            <p style="font-size: 18px;"><b>BALANCE: Rs. {bal}</b></p>
+            <hr style="border-top: 1px dashed black;">
+            <p style="font-size: 12px; text-align: center;">{note}</p>
+            <p style="text-align: center; font-size: 14px; margin-top: 10px;">THANK YOU!</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.info("💡 MacBook par Print ke liye: **Command + P** dabayen.")
         st.balloons()
     else:
-        st.error("Pehle Naam likhen!")
+        st.error("Pehle Name likhen!")
 
 st.divider()
-
-# --- Database View ---
-st.header("📊 All Business Records")
-current_db = load_data()
-if not current_db.empty:
-    st.dataframe(current_db)
-    
-    # Download button for backup
-    csv = current_db.to_csv(index=False).encode('utf-8')
-    st.download_button("📥 Download Excel Backup", csv, "tailor_backup.csv", "text/csv")
-else:
-    st.info("Abhi koi record nahi hai.")
+# Purana sara data nichay table mein nazar ayega
+st.header("📊 History")
+st.dataframe(load_data())
