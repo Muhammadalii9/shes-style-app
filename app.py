@@ -124,7 +124,7 @@ if st.button("💾 SAVE & GENERATE RECEIPT", use_container_width=True):
             <p>ADVANCE: Rs. {adv}</p>
             <p style="font-size: 18px;"><b>BALANCE: Rs. {bal}</b></p>
             <hr style="border-top: 1px dashed black;">
-            <p style="font-size: 12px; text-align: center;">{note}</p>
+            <p style="font-size: 18px; text-align: center;">{note}</p>
             <p style="text-align: center; font-size: 14px; margin-top: 10px;">THANK YOU!</p>
         </div>
         """, unsafe_allow_html=True)
