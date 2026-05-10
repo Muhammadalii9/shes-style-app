@@ -95,11 +95,12 @@ with k4:
     gb = st.text_input("Gala Back", "Normal")
 
 st.subheader("Shalwar")
-s1, s2, s3 = st.columns(3)
+s1, s2, s3 = s4.columns(4)
 with s1: sd = st.text_input("Design")
-with s2: sl = st.number_input("Shalwar L", value=36.0, step=0.5)
+with s2: sl = st.number_input("Shalwar Lambai", value=36.0, step=0.5)
+with s3: sp = st.number_input("loosing", value=15, step=0.5)
 with s3: sp = st.number_input("Paicha", value=7.5, step=0.5)
-sw = st.number_input("Loosing", value=16.0, step=0.5)
+
 
 total = st.number_input("Total", value=1000, step=100)
 adv = st.number_input("Advance", value=0, step=100)
