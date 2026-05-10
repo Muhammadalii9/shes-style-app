@@ -10,7 +10,10 @@ DB_FILE = "tailor_data.csv"
 
 def load_data():
     if os.path.exists(DB_FILE):
-        return pd.read_csv(DB_FILE)
+        try:
+            return pd.read_csv(DB_FILE)
+        except:
+            return pd.DataFrame()
     return pd.DataFrame()
 
 def save_to_file(new_record):
@@ -27,7 +30,6 @@ def delete_record(index_to_delete):
     return False
 
 # --- Receipt UI Function ---
-# Ye function raseed ka design banata hai taake hum isay kahin bhi dikha saken
 def show_receipt(data):
     st.markdown(f"""
     <div style="background-color: white; color: black; padding: 20px; font-family: 'Courier New', Courier, monospace; border: 2px solid black; width: 320px; margin: auto; line-height: 1.2;">
@@ -54,7 +56,7 @@ def show_receipt(data):
     </div>
     """, unsafe_allow_html=True)
 
-st.title("✂️ She's Style Tailors - digital measurement ")
+st.title("✂️ She's Style Tailors - Digital Measurement")
 
 # --- 🔍 SEARCH ---
 st.header("🔍 Search Customer")
@@ -69,13 +71,14 @@ if search_query and not db.empty:
 st.divider()
 
 # --- 📝 FORM ---
-st.header("📝 Measurement")
+st.header("📝 New Measurement")
 col1, col2, col3 = st.columns(3)
-with col1: name = st.text_input("Name")
-with col2: phone = st.text_input("Phone")
-with col3: d_date = st.date_input("Delivery", datetime.now() + timedelta(days=7))
+with col1: name = st.text_input("Customer Name")
+with col2: phone = st.text_input("Phone Number")
+with col3: d_date = st.date_input("Delivery Date", datetime.now() + timedelta(days=7))
 
-# Measurements Inputs (Shortened for display, but use your full list)
+# Measurements
+st.subheader("Kameez")
 k1, k2, k3, k4 = st.columns(4)
 with k1:
     l = st.number_input("Lambai", value=38.0, step=0.5)
@@ -95,17 +98,20 @@ with k4:
     gb = st.text_input("Gala Back", "Normal")
 
 st.subheader("Shalwar")
-s1, s2, s3 = s4.columns(4)
-with s1: sd = st.text_input("Design")
+s1, s2, s3, s4 = st.columns(4)
+with s1: sd = st.text_input("Shalwar Design")
 with s2: sl = st.number_input("Shalwar Lambai", value=36.0, step=0.5)
-with s3: sp = st.number_input("loosing", value=15, step=0.5)
-with s3: sp = st.number_input("Paicha", value=7.5, step=0.5)
+with s3: sw = st.number_input("Loosing", value=15.0, step=0.5)
+with s4: sp = st.number_input("Paicha", value=7.5, step=0.5)
 
-
-total = st.number_input("Total", value=1000, step=100)
-adv = st.number_input("Advance", value=0, step=100)
+st.divider()
+st.subheader("Billing")
+b1, b2 = st.columns(2)
+with b1: total = st.number_input("Total", value=1000, step=100)
+with b2: adv = st.number_input("Advance", value=0, step=100)
 bal = total - adv
-note = st.text_area("Note")
+st.metric("Balance to Pay", f"Rs. {bal}")
+note = st.text_area("Note (Optional)")
 
 if st.button("💾 SAVE RECORD", use_container_width=True):
     if name:
@@ -121,7 +127,7 @@ if st.button("💾 SAVE RECORD", use_container_width=True):
         st.success("Record Saved Successfully!")
         show_receipt(rec)
     else:
-        st.error("Name is required!")
+        st.error("Pehle Naam likhen!")
 
 st.divider()
 
@@ -129,15 +135,11 @@ st.divider()
 st.header("📊 History & Re-Print")
 history_db = load_data()
 if not history_db.empty:
-    # Aik dropdown banaya hai taake aap purana record select kar saken
-    st.write("Raseed nikalne ke liye customer select karen:")
-    
-    # Har customer ka naam aur date dropdown mein dikhega
+    st.write("Raseed nikalne ke liye select karen:")
     customer_list = [f"{idx}: {row['Name']} ({row['Date']})" for idx, row in history_db.iterrows()]
-    selected_option = st.selectbox("Select Customer to Print", customer_list)
+    selected_option = st.selectbox("Select Customer", customer_list)
     
     if selected_option:
-        # Index nikalna selected text se
         selected_idx = int(selected_option.split(":")[0])
         selected_data = history_db.iloc[selected_idx]
         
@@ -146,7 +148,7 @@ if not history_db.empty:
             if st.button("📄 View Receipt"):
                 show_receipt(selected_data)
         with col_p2:
-            if st.button("🗑️ Delete This Record"):
+            if st.button("🗑️ Delete Record"):
                 if delete_record(selected_idx):
                     st.warning("Deleted!")
                     st.rerun()
