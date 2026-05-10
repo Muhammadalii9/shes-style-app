@@ -54,7 +54,7 @@ def show_receipt(data):
     </div>
     """, unsafe_allow_html=True)
 
-st.title("✂️ She's Style Tailors - Smart POS")
+st.title("✂️ She's Style Tailors - digital measurement ")
 
 # --- 🔍 SEARCH ---
 st.header("🔍 Search Customer")
@@ -69,7 +69,7 @@ if search_query and not db.empty:
 st.divider()
 
 # --- 📝 FORM ---
-st.header("📝 New Measurement")
+st.header("📝 Measurement")
 col1, col2, col3 = st.columns(3)
 with col1: name = st.text_input("Name")
 with col2: phone = st.text_input("Phone")
@@ -78,31 +78,31 @@ with col3: d_date = st.date_input("Delivery", datetime.now() + timedelta(days=7)
 # Measurements Inputs (Shortened for display, but use your full list)
 k1, k2, k3, k4 = st.columns(4)
 with k1:
-    l = st.number_input("Lambai", value=38.0)
-    s = st.number_input("Shoulder", value=14.0)
-    c = st.number_input("Chest", value=20.0)
+    l = st.number_input("Lambai", value=38.0, step=0.5)
+    s = st.number_input("Shoulder", value=14.0, step=0.5)
+    c = st.number_input("Chest", value=20.0, step=0.5)
 with k2:
-    k = st.number_input("Kamar", value=18.0)
-    h = st.number_input("Hip", value=21.0)
-    chak = st.number_input("Chak", value=12.0)
+    k = st.number_input("Kamar", value=18.0, step=0.5)
+    h = st.number_input("Hip", value=21.0, step=0.5)
+    chak = st.number_input("Chak", value=12.0, step=0.5)
 with k3:
-    daman = st.number_input("Daman", value=22.0)
-    astin = st.number_input("Astin", value=20.0)
-    armh = st.number_input("Arm Hole", value=9.0)
+    daman = st.number_input("Daman", value=22.0, step=0.5)
+    astin = st.number_input("Astin", value=20.0, step=0.5)
+    armh = st.number_input("Arm Hole", value=9.0, step=0.5)
 with k4:
-    dana = st.number_input("Dan Astin", value=6.0)
+    dana = st.number_input("Dan Astin", value=6.0, step=0.5)
     gf = st.text_input("Gala Front", "7x5")
     gb = st.text_input("Gala Back", "Normal")
 
 st.subheader("Shalwar")
 s1, s2, s3 = st.columns(3)
 with s1: sd = st.text_input("Design")
-with s2: sl = st.number_input("Shalwar L", value=36.0)
-with s3: sp = st.number_input("Paicha", value=7.5)
-sw = st.number_input("Loosing", value=16.0)
+with s2: sl = st.number_input("Shalwar L", value=36.0, step=0.5)
+with s3: sp = st.number_input("Paicha", value=7.5, step=0.5)
+sw = st.number_input("Loosing", value=16.0, step=0.5)
 
-total = st.number_input("Total", value=1000)
-adv = st.number_input("Advance", value=0)
+total = st.number_input("Total", value=1000, step=100)
+adv = st.number_input("Advance", value=0, step=100)
 bal = total - adv
 note = st.text_area("Note")
 
