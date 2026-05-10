@@ -6,15 +6,11 @@ from datetime import datetime, timedelta
 # --- Page Setup ---
 st.set_page_config(page_title="She's Style Tailors", layout="wide")
 
-# --- Permanent Database Logic ---
 DB_FILE = "tailor_data.csv"
 
 def load_data():
     if os.path.exists(DB_FILE):
-        try:
-            return pd.read_csv(DB_FILE)
-        except:
-            return pd.DataFrame()
+        return pd.read_csv(DB_FILE)
     return pd.DataFrame()
 
 def save_to_file(new_record):
@@ -25,153 +21,133 @@ def save_to_file(new_record):
 def delete_record(index_to_delete):
     df = load_data()
     if not df.empty:
-        df = df.drop(index_to_delete)
+        df = df.drop(index_to_delete).reset_index(drop=True)
         df.to_csv(DB_FILE, index=False)
         return True
     return False
 
-st.title("✂️ She's Style Tailors - digital measurement book")
+# --- Receipt UI Function ---
+# Ye function raseed ka design banata hai taake hum isay kahin bhi dikha saken
+def show_receipt(data):
+    st.markdown(f"""
+    <div style="background-color: white; color: black; padding: 20px; font-family: 'Courier New', Courier, monospace; border: 2px solid black; width: 320px; margin: auto; line-height: 1.2;">
+        <h2 style="text-align: center; margin: 0;">SHE'S STYLE</h2>
+        <p style="text-align: center; margin: 0; font-size: 12px;">TAILORS - QUETTA</p>
+        <hr style="border-top: 2px solid black;">
+        <p><b>NAME:</b> {str(data['Name']).upper()}</p>
+        <p><b>DATE:</b> {data['Date']}</p>
+        <p style="background-color: #eee; padding: 5px;"><b>DELIVERY: {data['Delivery']}</b></p>
+        <hr style="border-top: 1px dashed black;">
+        <p><b>KAMEEZ:</b> {data['L']} | {data['S']} | {data['C']} | {data['K']}</p>
+        <p>H:{data['H']} | Ch:{data['Chak']} | D:{data['Daman']} | Ast:{data['Astin']}</p>
+        <p>Gala: {data['GalaF']} / {data['GalaB']}</p>
+        <hr style="border-top: 1px dashed black;">
+        <p><b>SHALWAR:</b> {data['ShalwarD']}</p>
+        <p>L:{data['ShalwarL']} | Loos:{data['ShalwarLoos']} | P:{data['Paicha']}</p>
+        <hr style="border-top: 2px solid black;">
+        <p>TOTAL: Rs. {data['Total']}</p>
+        <p>ADVANCE: Rs. {data['Adv']}</p>
+        <p style="font-size: 18px;"><b>BALANCE: Rs. {data['Bal']}</b></p>
+        <hr style="border-top: 1px dashed black;">
+        <p style="font-size: 12px; text-align: center;">{data['Note']}</p>
+        <p style="text-align: center; font-size: 14px; margin-top: 10px;">THANK YOU!</p>
+    </div>
+    """, unsafe_allow_html=True)
 
-# --- 🔍 1. SEARCH SECTION ---
-st.header("🔍 Search Customer (Purana Naap)")
-search_query = st.text_input("Naam ya Phone Number likhen:")
+st.title("✂️ She's Style Tailors - Smart POS")
+
+# --- 🔍 SEARCH ---
+st.header("🔍 Search Customer")
+search_query = st.text_input("Naam ya Phone Number:")
 db = load_data()
-
 if search_query and not db.empty:
-    results = db[db['Name'].astype(str).str.contains(search_query, case=False, na=False) | 
-                db['Phone'].astype(str).str.contains(search_query, na=False)]
-    if not results.empty:
-        st.success(f"✅ {len(results)} Record mil gaya!")
-        st.dataframe(results)
-    else:
-        st.warning("Koi record nahi mila.")
+    res = db[db['Name'].astype(str).str.contains(search_query, case=False, na=False) | 
+             db['Phone'].astype(str).str.contains(search_query, na=False)]
+    if not res.empty:
+        st.dataframe(res)
 
 st.divider()
 
-# --- 👤 2. CUSTOMER DETAILS ---
-st.header("👤 Customer & Order")
-c1, c2, c3 = st.columns(3)
-with c1:
-    name = st.text_input("Customer Name")
-with c2:
-    phone = st.text_input("Phone Number")
-with c3:
-    d_date = st.date_input("Delivery Date", datetime.now() + timedelta(days=7))
+# --- 📝 FORM ---
+st.header("📝 New Measurement")
+col1, col2, col3 = st.columns(3)
+with col1: name = st.text_input("Name")
+with col2: phone = st.text_input("Phone")
+with col3: d_date = st.date_input("Delivery", datetime.now() + timedelta(days=7))
 
-st.divider()
-
-# --- 📏 3. MEASUREMENTS ---
-st.header("📏 Measurements (Kameez)")
+# Measurements Inputs (Shortened for display, but use your full list)
 k1, k2, k3, k4 = st.columns(4)
 with k1:
-    l = st.number_input("Lambai", value=38.0, step=0.5)
-    s = st.number_input("Shoulder", value=14.0, step=0.5)
-    c = st.number_input("Chest", value=20.0, step=0.5)
+    l = st.number_input("Lambai", value=38.0)
+    s = st.number_input("Shoulder", value=14.0)
+    c = st.number_input("Chest", value=20.0)
 with k2:
-    k = st.number_input("Kamar", value=18.0, step=0.5)
-    h = st.number_input("Hip", value=21.0, step=0.5)
-    chak = st.number_input("Chak", value=12.0, step=0.5)
+    k = st.number_input("Kamar", value=18.0)
+    h = st.number_input("Hip", value=21.0)
+    chak = st.number_input("Chak", value=12.0)
 with k3:
-    daman = st.number_input("Daman", value=22.0, step=0.5)
-    astin = st.number_input("Astin", value=20.0, step=0.5)
-    armh = st.number_input("Arm Hole", value=9.0, step=0.5)
+    daman = st.number_input("Daman", value=22.0)
+    astin = st.number_input("Astin", value=20.0)
+    armh = st.number_input("Arm Hole", value=9.0)
 with k4:
-    dana = st.number_input("Dan Astin", value=6.0, step=0.5)
+    dana = st.number_input("Dan Astin", value=6.0)
     gf = st.text_input("Gala Front", "7x5")
     gb = st.text_input("Gala Back", "Normal")
 
-st.header("👖 Shalwar Details")
-s1, s2, s3, s4 = st.columns(4)
-with s1:
-    sd = st.text_input("Shalwar Design")
-with s2:
-    sl = st.number_input("Shalwar Lambai", value=36.0, step=0.5)
-with s3:
-    sw = st.number_input("Shalwar Loosing", value=16.0, step=0.5)
-with s4:
-    sp = st.number_input("Paicha", value=7.5, step=0.5)
+st.subheader("Shalwar")
+s1, s2, s3 = st.columns(3)
+with s1: sd = st.text_input("Design")
+with s2: sl = st.number_input("Shalwar L", value=36.0)
+with s3: sp = st.number_input("Paicha", value=7.5)
+sw = st.number_input("Loosing", value=16.0)
 
-st.divider()
+total = st.number_input("Total", value=1000)
+adv = st.number_input("Advance", value=0)
+bal = total - adv
+note = st.text_area("Note")
 
-# --- 💰 4. BILLING ---
-st.header("💰 Payment & Billing")
-b1, b2 = st.columns(2)
-with b1:
-    total = st.number_input("Total Bill", value=1000.0, step=100.0)
-with b2:
-    adv = st.number_input("Advance Payment", value=0.0, step=100.0)
-
-bal = float(total) - float(adv)
-st.metric("BAQI (BALANCE)", f"Rs. {bal}")
-note = st.text_area("Karigar Note (Extra instructions)")
-
-st.divider()
-
-# --- ✅ 5. SAVE & PRINT ACTION ---
-if st.button("💾 SAVE & GENERATE RECEIPT", use_container_width=True):
+if st.button("💾 SAVE RECORD", use_container_width=True):
     if name:
-        record = {
+        rec = {
             "Date": datetime.now().strftime("%Y-%m-%d"),
             "Name": name, "Phone": phone, "Delivery": d_date.strftime("%Y-%m-%d"),
-            "L": l, "S": s, "C": c, "K": k, "H": h, "Chak": chak, 
-            "Daman": daman, "Astin": astin, "AH": armh, "DanA": dana, 
-            "GalaF": gf, "GalaB": gb, "ShalwarD": sd, "ShalwarL": sl, 
-            "ShalwarLoos": sw, "Paicha": sp, "Total": total, "Adv": adv, 
-            "Bal": bal, "Note": note
+            "L": l, "S": s, "C": c, "K": k, "H": h, "Chak": chak, "Daman": daman,
+            "Astin": astin, "AH": armh, "DanA": dana, "GalaF": gf, "GalaB": gb,
+            "ShalwarD": sd, "ShalwarL": sl, "ShalwarLoos": sw, "Paicha": sp,
+            "Total": total, "Adv": adv, "Bal": bal, "Note": note
         }
-        save_to_file(record)
-        st.success(f"✅ {name} ka record Computer mein save ho gaya!")
-        
-        # Receipt UI
-        st.markdown(f"""
-        <div style="background-color: white; color: black; padding: 20px; font-family: 'Courier New', Courier, monospace; border: 2px solid black; width: 320px; margin: auto;">
-            <h2 style="text-align: center; margin: 0;">SHE'S STYLE</h2>
-            <p style="text-align: center; margin: 0; font-size: 12px;">TAILORS - QUETTA</p>
-            <hr style="border-top: 2px solid black;">
-            <p><b>NAME:</b> {name.upper()}</p>
-            <p><b>DATE:</b> {datetime.now().strftime("%d/%m/%Y")}</p>
-            <p style="background-color: #eee; padding: 5px;"><b>DELIVERY: {d_date.strftime("%d/%m/%Y")}</b></p>
-            <hr style="border-top: 1px dashed black;">
-            <p><b>KAMEEZ:</b> {l} | {s} | {c} | {k}</p>
-            <p>H:{h} | Ch:{chak} | D:{daman} | Ast:{astin}</p>
-            <p>Gala: {gf} / {gb}</p>
-            <hr style="border-top: 1px dashed black;">
-            <p><b>SHALWAR:</b> {sd}</p>
-            <p>L:{sl} | Loos:{sw} | P:{sp}</p>
-            <hr style="border-top: 2px solid black;">
-            <p>TOTAL: Rs. {total}</p>
-            <p>ADVANCE: Rs. {adv}</p>
-            <p style="font-size: 18px;"><b>BALANCE: Rs. {bal}</b></p>
-            <hr style="border-top: 1px dashed black;">
-            <p style="font-size: 18px; text-align: center;">{note}</p>
-            <p style="text-align: center; font-size: 14px; margin-top: 10px;">THANK YOU!</p>
-        </div>
-        """, unsafe_allow_html=True)
-        st.info("💡 MacBook par Print ke liye: **Command + P** dabayen.")
-        st.balloons()
+        save_to_file(rec)
+        st.success("Record Saved Successfully!")
+        show_receipt(rec)
     else:
-        st.error("Pehle Name likhen!")
+        st.error("Name is required!")
 
 st.divider()
 
-# --- 📊 6. HISTORY & MANAGEMENT ---
-st.header("📊 History & Management (Delete Records)")
-current_db = load_data()
-
-if not current_db.empty:
-    st.dataframe(current_db)
+# --- 📊 HISTORY & RE-PRINT ---
+st.header("📊 History & Re-Print")
+history_db = load_data()
+if not history_db.empty:
+    # Aik dropdown banaya hai taake aap purana record select kar saken
+    st.write("Raseed nikalne ke liye customer select karen:")
     
-    # Delete Option
-    st.subheader("🗑️ Delete Section")
-    col_del1, col_del2 = st.columns([1, 4])
-    with col_del1:
-        row_index = st.number_input("Index No likhen:", min_value=0, max_value=len(current_db)-1, step=1)
-    with col_del2:
-        st.write(" ") # Padding
-        st.write(" ") # Padding
-        if st.button(f"Khatam Karen Record #{row_index}", type="secondary"):
-            if delete_record(row_index):
-                st.warning(f"Record #{row_index} mita diya gaya!")
-                st.rerun()
-else:
-    st.info("Abhi koi record mahfooz nahi hai.")
+    # Har customer ka naam aur date dropdown mein dikhega
+    customer_list = [f"{idx}: {row['Name']} ({row['Date']})" for idx, row in history_db.iterrows()]
+    selected_option = st.selectbox("Select Customer to Print", customer_list)
+    
+    if selected_option:
+        # Index nikalna selected text se
+        selected_idx = int(selected_option.split(":")[0])
+        selected_data = history_db.iloc[selected_idx]
+        
+        col_p1, col_p2 = st.columns(2)
+        with col_p1:
+            if st.button("📄 View Receipt"):
+                show_receipt(selected_data)
+        with col_p2:
+            if st.button("🗑️ Delete This Record"):
+                if delete_record(selected_idx):
+                    st.warning("Deleted!")
+                    st.rerun()
+    
+    st.dataframe(history_db)
