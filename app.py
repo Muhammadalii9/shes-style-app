@@ -51,7 +51,7 @@ def show_receipt(data):
         <p>ADVANCE: Rs. {data['Adv']}</p>
         <p style="font-size: 18px;"><b>BALANCE: Rs. {data['Bal']}</b></p>
         <hr style="border-top: 1px dashed black;">
-        <p style="font-size: 12px; text-align: center;">{data['Note']}</p>
+        <p style="font-size: 18px; text-align: center;">{data['Note']}</p>
         <p style="text-align: center; font-size: 14px; margin-top: 10px;">THANK YOU!</p>
     </div>
     """, unsafe_allow_html=True)
